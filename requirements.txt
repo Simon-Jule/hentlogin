@@ -8,5 +8,5 @@ Jinja2==2.11.2
 MarkupSafe==1.1.1
 PyMySQL==0.9.3
 six==1.14.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 xmlrunner==1.7.7
