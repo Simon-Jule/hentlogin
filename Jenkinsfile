@@ -1,7 +1,8 @@
 pipeline {
   agent {
     node {
-    checkout scm
+      label 'labelTest'
+      checkout scm
       docker.image('mysql:5').withRun('-e "MYSQL_ROOT_PASSWORD=root"') { c ->
         docker.image('mysql:5').inside("--link ${c.id}:db") {
             /* Wait until mysql service is up */
