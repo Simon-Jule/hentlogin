@@ -50,7 +50,7 @@ def connect_db():
         # if database is unknown
         if code == 1049:
             print(err)
-            # create_db(cursor)
+            create_db(cursor)
             print("Database {} created successfully.".format('pythonlogin'))
             cnx.database = 'pythonlogin'
         else:
@@ -76,9 +76,9 @@ def init_db():
     print("initialize the database")
     with app.app_context():
         db = get_db()
-        with app.open_resource('schema0.sql', mode='r') as f:
-            db.cursor().execute(f.read())
-        db.commit()
+        # with app.open_resource('schema0.sql', mode='r') as f:
+        #     db.cursor().execute(f.read())
+        # db.commit()
         with app.open_resource('schema1.sql', mode='r') as f:
             db.cursor().execute(f.read())
         db.commit()
