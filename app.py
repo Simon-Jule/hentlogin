@@ -26,8 +26,9 @@ mysql_ext = MySQL(cursorclass=pymysql.cursors.DictCursor)
 # Enter your database connection details below
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'pythonlogin'
-app.config['MYSQL_DATABASE_HOST'] = 'db'
+#app.config['MYSQL_DATABASE_DB'] = 'flaskr'
+DB_NAME = 'pythonlogin'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 
 # Intialize MySQL#####################
 # mysql.init_app(app)
@@ -41,18 +42,18 @@ def connect_db():
     cursor = cnx.cursor()
 
     try:
-        cursor.execute("USE {}".format('pythonlogin'))
+        cursor.execute("USE {}".format(DB_NAME))
     # except mysql.connector.Error as err:
     except pymysql.err.InternalError as err:
         code, msg = err.args
-        print("Database {} does not exists.".format('pythonlogin'))
+        print("Database {} does not exists.".format(DB_NAME))
         # if err.errno == errorcode.ER_BAD_DB_ERROR:
         # if database is unknown
         if code == 1049:
             print(err)
             create_db(cursor)
-            print("Database {} created successfully.".format('pythonlogin'))
-            cnx.database = 'pythonlogin'
+            print("Database {} created successfully.".format(DB_NAME))
+            cnx.database = DB_NAME
         else:
             print(err)
             exit(1)
@@ -66,7 +67,7 @@ def create_db(cursor):
     print("creates the database")
     try:
         cursor.execute(
-            "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format('pythonlogin'))
+            "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(DB_NAME))
     except pymysql.err.InternalError as err:
         print("Failed creating database: {}".format(err))
         exit(1)
@@ -76,18 +77,14 @@ def init_db():
     print("initialize the database")
     with app.app_context():
         db = get_db()
-        # with app.open_resource('schema0.sql', mode='r') as f:
-        #     db.cursor().execute(f.read())
-        # db.commit()
+        db.cursor().execute("USE {}".format(DB_NAME))
+        db.commit()
         with app.open_resource('schema1.sql', mode='r') as f:
             db.cursor().execute(f.read())
         db.commit()
         with app.open_resource('schema2.sql', mode='r') as f:
             db.cursor().execute(f.read())
         db.commit()
-        # with app.open_resource('schema3.sql', mode='r') as f:
-        #     db.cursor().execute(f.read())
-        # db.commit()
 
 # open database connection
 
@@ -235,5 +232,6 @@ def profile():
 if __name__ == "__main__":
     init_db()
     app.run()
+# Initialize DB for tests
 else:
     init_db()

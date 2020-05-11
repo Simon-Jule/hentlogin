@@ -8,9 +8,8 @@ class BasicTestCase(unittest.TestCase):
         app.app.testing = True
         self.app = app.app.test_client()
 
+    # No route for "/"
     def test_index(self):
-        #tester = app.test_client(self)
-        #response = tester.get('/', content_type='html/text')
         response = self.app.get('/', content_type='html/text')
         self.assertEqual(response.status_code, 404)
 
