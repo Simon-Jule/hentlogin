@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
 from flask_session import Session
 from flask_cors import CORS, cross_origin
 #from flask_mysqldb import MySQL#####################
 from flaskext.mysql import MySQL
-from pymysql.cursors import DictCursor
+#from pymysql.cursors import DictCursor
+import pymysql
 #import MySQLdb.cursors ####################
 import re
 
@@ -18,26 +19,87 @@ CORS(app)
 app.secret_key = '1234'
 
 ######################
-mysql = MySQL(cursorclass=DictCursor)
+#mysql = MySQL(cursorclass=DictCursor)
+mysql_ext = MySQL(cursorclass=pymysql.cursors.DictCursor)
 ######################
 
 # Enter your database connection details below
-#app.config['MYSQL_HOST'] = 'localhost'
-#app.config['MYSQL_USER'] = 'hent'
-#app.config['MYSQL_PASSWORD'] = 'password'
-#app.config['MYSQL_DB'] = 'pythonlogin'
-#########################################
 app.config['MYSQL_DATABASE_USER'] = 'hent'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'password'
 app.config['MYSQL_DATABASE_DB'] = 'pythonlogin'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 
 # Intialize MySQL#####################
-#mysql = MySQL(app)
+# mysql.init_app(app)
+mysql_ext.init_app(app)
 
-mysql.init_app(app)
 
-conn = mysql.connect()
+def connect_db():
+    """Connects to the database."""
+    print("connects to the database")
+    cnx = mysql_ext.connect()
+    cursor = cnx.cursor()
+
+    try:
+        cursor.execute("USE {}".format('pythonlogin'))
+    # except mysql.connector.Error as err:
+    except pymysql.err.InternalError as err:
+        code, msg = err.args
+        print("Database {} does not exists.".format('pythonlogin'))
+        # if err.errno == errorcode.ER_BAD_DB_ERROR:
+        # if database is unknown
+        if code == 1049:
+            print(err)
+            # create_db(cursor)
+            print("Database {} created successfully.".format('pythonlogin'))
+            cnx.database = 'pythonlogin'
+        else:
+            print(err)
+            exit(1)
+
+    return cnx
+
+# creates the database
+
+
+def create_db(cursor):
+    print("creates the database")
+    try:
+        cursor.execute(
+            "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format('pythonlogin'))
+    except pymysql.err.InternalError as err:
+        print("Failed creating database: {}".format(err))
+        exit(1)
+
+
+def init_db():
+    print("initialize the database")
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('schema1.sql', mode='r') as f:
+            db.cursor().execute(f.read())
+        db.commit()
+        with app.open_resource('schema2.sql', mode='r') as f:
+            db.cursor().execute(f.read())
+        db.commit()
+        # with app.open_resource('schema3.sql', mode='r') as f:
+        #     db.cursor().execute(f.read())
+        # db.commit()
+
+# open database connection
+
+
+def get_db():
+    print("open database connection")
+    if not hasattr(g, 'mysql_db'):
+        g.mysql_db = connect_db()
+    return g.mysql_db
+
+# close database connection
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'mysql_db'):
+        g.mysql_db.close()
 
 # http://localhost:5000/pythonlogin/ - this will be the login page, we need to use both GET and POST requests
 @app.route('/pythonlogin/', methods=['GET', 'POST'])
@@ -52,6 +114,7 @@ def login():
         password = request.form['password']
 
         # Check if account exists using MySQL
+        conn = connect_db()
         cursor = conn.cursor()
         cursor.execute(
             'SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
@@ -102,6 +165,7 @@ def register():
         email = request.form['email']
 
         # Check if account exists using MySQL
+        conn = conn = connect_db()
         cursor = conn.cursor()
         cursor.execute(
             'SELECT * FROM accounts WHERE username = %s', (username,))
@@ -131,7 +195,7 @@ def register():
     # return render_template('register.html', msg=msg)
     return jsonify(msg)
 
-# http://localhost:5000/pythinlogin/home - this will be the home page, only accessible for loggedin users
+# http://localhost:5000/pythonlogin/home - this will be the home page, only accessible for loggedin users
 @app.route('/pythonlogin/home')
 @cross_origin(supports_credentials=True)
 def home():
@@ -144,7 +208,7 @@ def home():
     # return redirect(url_for('login'))
     return jsonify("Redirect to login page")
 
-# http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
+# http://localhost:5000/pythonlogin/profile - this will be the profile page, only accessible for loggedin users
 @app.route('/pythonlogin/profile')
 @cross_origin(supports_credentials=True)
 def profile():
@@ -152,6 +216,7 @@ def profile():
     if 'loggedin' in session:
         # We need all the account info for the user so we can display it on the profile page
         #cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        conn = connect_db()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM accounts WHERE id = %s',
                        (session['id'],))
@@ -165,4 +230,5 @@ def profile():
 
 
 if __name__ == "__main__":
+    init_db()
     app.run()

@@ -1,5 +1,23 @@
+import os
 import unittest
 import app
+
+
+class BasicTestCase(unittest.TestCase):
+    def setUp(self):
+        app.app.testing = True
+        self.app = app.app.test_client()
+
+    def test_index(self):
+        #tester = app.test_client(self)
+        #response = tester.get('/', content_type='html/text')
+        response = self.app.get('/', content_type='html/text')
+        self.assertEqual(response.status_code, 404)
+
+    def test_database(self):
+        tester = os.path.exists(
+            "C:/ProgramData/MySQL/MySQL Server 8.0/Data/flaskr")
+        self.assertTrue(tester)
 
 
 class TestLogin(unittest.TestCase):
@@ -32,14 +50,14 @@ class TestLogin(unittest.TestCase):
         self.assertEqual(rv.status, '200 OK')
         self.assertEqual(rv.data, b'""\n')
 
-        # # Integration Test
-        # """Test login using helper functions."""
-        # rv = self.login(
-        #     app.app.config['USERNAME'],
-        #     app.app.config['PASSWORD']
-        # )
-        # self.assertEqual(rv.status, '200 OK')
-        # self.assertEqual(rv.data, b'"Successfully logged in"\n')
+        # Integration Test
+        """Test login using helper functions."""
+        rv = self.login(
+            app.app.config['USERNAME'],
+            app.app.config['PASSWORD']
+        )
+        self.assertEqual(rv.status, '200 OK')
+        self.assertEqual(rv.data, b'"Successfully logged in"\n')
 
         rv = self.login(
             app.app.config['USERNAME'],
@@ -64,14 +82,14 @@ class TestLogin(unittest.TestCase):
     # register already existing user (same as logged in)
     def test_register(self):
         """Test register using helper functions."""
-        # # Integration Test
-        # rv = self.register(
-        #     app.app.config['USERNAME'],
-        #     app.app.config['PASSWORD'],
-        #     app.app.config['EMAIL']
-        # )
-        # self.assertEqual(rv.status, '200 OK')
-        # self.assertEqual(rv.data, b'"Account already exists!"\n')
+        # Integration Test
+        rv = self.register(
+            app.app.config['USERNAME'],
+            app.app.config['PASSWORD'],
+            app.app.config['EMAIL']
+        )
+        self.assertEqual(rv.status, '200 OK')
+        self.assertEqual(rv.data, b'"Account already exists!"\n')
 
         rv = self.register(
             app.app.config['USERNAME'] + 'bis',
