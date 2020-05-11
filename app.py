@@ -76,6 +76,9 @@ def init_db():
     print("initialize the database")
     with app.app_context():
         db = get_db()
+        with app.open_resource('schema0.sql', mode='r') as f:
+            db.cursor().execute(f.read())
+        db.commit()
         with app.open_resource('schema1.sql', mode='r') as f:
             db.cursor().execute(f.read())
         db.commit()
