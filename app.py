@@ -27,7 +27,7 @@ mysql_ext = MySQL(cursorclass=pymysql.cursors.DictCursor)
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
 app.config['MYSQL_DATABASE_DB'] = 'pythonlogin'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['MYSQL_DATABASE_HOST'] = 'db'
 
 # Intialize MySQL#####################
 # mysql.init_app(app)
