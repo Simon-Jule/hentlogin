@@ -13,10 +13,10 @@ class BasicTestCase(unittest.TestCase):
         response = self.app.get('/', content_type='html/text')
         self.assertEqual(response.status_code, 404)
 
-    def test_database(self):
-        tester = os.path.exists(
-            "C:/ProgramData/MySQL/MySQL Server 8.0/Data/flaskr")
-        self.assertTrue(tester)
+    # def test_database(self):
+    #     tester = os.path.exists(
+    #         "C:/ProgramData/MySQL/MySQL Server 8.0/Data/flaskr")
+    #     self.assertTrue(tester)
 
 
 class TestLogin(unittest.TestCase):

@@ -50,7 +50,6 @@ def connect_db():
         # if err.errno == errorcode.ER_BAD_DB_ERROR:
         # if database is unknown
         if code == 1049:
-            print(err)
             create_db(cursor)
             print("Database {} created successfully.".format(DB_NAME))
             cnx.database = DB_NAME
