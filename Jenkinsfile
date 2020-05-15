@@ -17,4 +17,6 @@ node {
                 /*sh 'make check'*/
             }
         }
+    stage 'Deploy'
+        docker build -t hentlogin .
 }
