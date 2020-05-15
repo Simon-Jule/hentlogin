@@ -1,12 +1,7 @@
 node {
     stage 'Checkout'
-        checkout([$class: 'GitSCM', 
-            branches: [[name: '*/dev']], 
-            doGenerateSubmoduleConfigurations: false, 
-            extensions: [], 
-            submoduleCfg: [], 
-            userRemoteConfigs: [[]]
-        ])
+        sh 'echo This is a development environment!'
+        checkout scm
     stage 'Build and UnitTest'
         docker.image('mysql:5').withRun('-e "MYSQL_ROOT_PASSWORD=root"') { c ->
             docker.image('mysql:5').inside("--link ${c.id}:db") {
