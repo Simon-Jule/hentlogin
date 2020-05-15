@@ -18,5 +18,6 @@ node {
             }
         }
     stage 'Deploy'
-        docker build -t hentlogin .
+        sh 'docker build -t hentlogin .'
+        sh 'docker run -it -d hentlogin'
 }
